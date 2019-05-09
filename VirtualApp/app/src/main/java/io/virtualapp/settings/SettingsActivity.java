@@ -161,7 +161,7 @@ public class SettingsActivity extends Activity {
                 startActivity(new Intent(getActivity(), AboutActivity.class));
                 return false;
             });
-
+            //TODO:重启生效
             reboot.setOnPreferenceClickListener(preference -> {
                 android.app.AlertDialog alertDialog = new android.app.AlertDialog.Builder(getActivity())
                         .setTitle(R.string.settings_reboot_title)
