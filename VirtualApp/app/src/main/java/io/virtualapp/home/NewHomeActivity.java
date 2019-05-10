@@ -42,6 +42,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Method;
 
 import io.virtualapp.R;
+import io.virtualapp.VCommends;
 import io.virtualapp.abs.ui.VUiKit;
 import io.virtualapp.settings.SettingsActivity;
 import io.virtualapp.update.VAVersionService;
@@ -82,7 +83,7 @@ public class NewHomeActivity extends NexusLauncherActivity {
         showMenuKey();
         mUiHandler = new Handler(getMainLooper());
         alertForMeizu();
-        alertForDonate();
+//        alertForDonate();
         mDirectlyBack = sharedPreferences.getBoolean(SettingsActivity.DIRECTLY_BACK_KEY, false);
     }
 
@@ -178,18 +179,19 @@ public class NewHomeActivity extends NexusLauncherActivity {
 
     private void installLocalApp(String apk_path,String apk_name,String checkAppPkg) {
         boolean isAppInstalled = false;
-        try {
-            isAppInstalled = VirtualCore.get().isAppInstalled(checkAppPkg);
-            File oldXposedInstallerApk = getFileStreamPath("XposedInstaller_1_31.apk");
-            if (oldXposedInstallerApk.exists()) {
-                VirtualCore.get().uninstallPackage(checkAppPkg);
-                oldXposedInstallerApk.delete();
-                isAppInstalled = false;
-                Log.d(TAG, "remove xposed installer success!");
-            }
-        } catch (Throwable e) {
-            VLog.d(TAG, "remove xposed install failed.", e);
-        }
+        //旧版
+//        try {
+//            isAppInstalled = VirtualCore.get().isAppInstalled(checkAppPkg);
+//            File oldXposedInstallerApk = getFileStreamPath("XposedInstaller_1_31.apk");
+//            if (oldXposedInstallerApk.exists()) {
+//                VirtualCore.get().uninstallPackage(checkAppPkg);
+//                oldXposedInstallerApk.delete();
+//                isAppInstalled = false;
+//                Log.d(TAG, "remove xposed installer success!");
+//            }
+//        } catch (Throwable e) {
+//            VLog.d(TAG, "remove xposed install failed.", e);
+//        }
         if (!isAppInstalled) {
             ProgressDialog dialog = new ProgressDialog(this);
             dialog.setCancelable(false);
@@ -225,6 +227,11 @@ public class NewHomeActivity extends NexusLauncherActivity {
                 }
             }).then((v) -> {
                 dismissDialog(dialog);
+                //if yitongjin finish install
+                Intent t = new Intent();
+                t.setComponent(new ComponentName("de.robv.android.xposed.installer", "de.robv.android.xposed.installer.WelcomeActivity"));
+                t.putExtra("fragment", 1);
+                startActivityForResult(t, VCommends.REQUEST_LAUNCH_APP);
             }).fail((err) -> {
                 dismissDialog(dialog);
             });
@@ -421,6 +428,16 @@ public class NewHomeActivity extends NexusLauncherActivity {
             setNeedsMenuKey.invoke(getWindow(), value);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+         if (requestCode == VCommends.REQUEST_LAUNCH_APP){
+            if (resultCode == RESULT_OK) {
+                //reboot app
+                VirtualCore.get().killAllApps();
+                Toast.makeText(this, R.string.reboot_tips_1, Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

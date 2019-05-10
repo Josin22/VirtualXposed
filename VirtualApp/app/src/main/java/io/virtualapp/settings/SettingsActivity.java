@@ -110,6 +110,7 @@ public class SettingsActivity extends Activity {
                     Intent t = new Intent();
                     t.setComponent(new ComponentName("de.robv.android.xposed.installer", "de.robv.android.xposed.installer.WelcomeActivity"));
                     t.putExtra("fragment", 1);
+//                    startActivityForResult(t,VCommends.REQUEST_LAUNCH_APP);
                     int ret = VActivityManager.get().startActivity(t, 0);
                     if (ret < 0) {
                         Toast.makeText(getActivity(), R.string.xposed_installer_not_found, Toast.LENGTH_SHORT).show();
@@ -161,7 +162,7 @@ public class SettingsActivity extends Activity {
                 startActivity(new Intent(getActivity(), AboutActivity.class));
                 return false;
             });
-            //TODO:重启生效
+            //MARK:重启生效
             reboot.setOnPreferenceClickListener(preference -> {
                 android.app.AlertDialog alertDialog = new android.app.AlertDialog.Builder(getActivity())
                         .setTitle(R.string.settings_reboot_title)

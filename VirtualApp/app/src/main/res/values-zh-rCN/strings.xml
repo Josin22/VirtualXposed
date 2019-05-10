@@ -155,7 +155,7 @@
     <string name="donate_alipay">支付宝</string>
     <string name="advance_settings_disable_xposed">关闭 Xposed</string>
     <string name="advance_settings_disable_xposed_summary">关闭Xposed之后，所有的Xposed均不会生效。</string>
-    <string name="prepare_xposed_installer">首次准备 Xposed 环境大概12分钟左右完成,请耐心等待…</string>
+    <string name="prepare_xposed_installer">首次准备 Xposed 环境大概15分钟左右完成,请耐心等待…</string>
     <string name="install_file_manager_tips">文件管理是通过 Amaze File Manager 支持的，是否立即下载（约3M）并安装？</string>
     <string name="settings_permission_manage_text">权限管理</string>
     <string name="settings_file_manage_text">文件管理</string>
