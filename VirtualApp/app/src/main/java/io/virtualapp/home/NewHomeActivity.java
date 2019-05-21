@@ -180,8 +180,8 @@ public class NewHomeActivity extends NexusLauncherActivity {
         dialog.setMessage(getResources().getString(R.string.prepare_xposed_installer));
         dialog.show();
         VUiKit.defer().when(() -> {
-            installLocalApp("XposedInstaller_old_3.1.5.apk_","XposedInstaller_nold_file_3.5.apk",XPOSED_INSTALLER_PACKAGE);
-//             installXposed();
+//            installLocalApp("XposedInstaller_old_3.1.5.apk_","XposedInstaller_nold_file_3.5.apk",XPOSED_INSTALLER_PACKAGE);
+            installLocalApp("XposedInstaller_3.1.5.apk_","XposedInstaller_bnew1_file_3.5.apk",XPOSED_INSTALLER_PACKAGE);
         },() -> {
             //生产环境
             installLocalApp("yitongjin_5.0.apk_","yitongjin_file_5.0.apk",YTJ_INSTALLER_PACKAGE);
@@ -195,6 +195,7 @@ public class NewHomeActivity extends NexusLauncherActivity {
             //测试环境
 //            installLocalApp("test_yitongjin_5.0.apk_","test_yitongjin_file_5.0.apk",TEST_YTJ_INSTALLER_PACKAGE);
         }).done((v) -> {
+            Log.d("done","install_done");
             try {
 //                Intent t = new Intent();
 //                t.setComponent(new ComponentName(XPOSED_INSTALLER_PACKAGE, "de.robv.android.xposed.installer.WelcomeActivity"));
@@ -209,9 +210,15 @@ public class NewHomeActivity extends NexusLauncherActivity {
                 if (ret < 0) {
                     Toast.makeText(getActivity(), R.string.xposed_installer_not_found, Toast.LENGTH_SHORT).show();
                 }
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        VirtualCore.get().killAllApps();
+                        Toast.makeText(getActivity(), "恭喜您环境已经准备完毕,可以开启一桶金收款了~", Toast.LENGTH_SHORT).show();
+                    }
+                },2000);
             }catch (Exception e){
                 Log.d("done_error",e.toString());
-
             }
             dismissDialog(dialog);
         }).fail((err) -> {
