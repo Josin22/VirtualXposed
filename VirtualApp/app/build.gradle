@@ -13,15 +13,22 @@ if (localProp.exists()) {
 def keyFile = file(properties.getProperty("keystore.path") ?: "/tmp/does_not_exist")
 
 android {
+//    signingConfigs {
+//        config {
+//            keyAlias properties.getProperty("keystore.alias")
+//            keyPassword properties.getProperty("keystore.pwd")
+//            storeFile keyFile
+//            storePassword properties.getProperty("keystore.alias_pwd")
+//        }
+//    }
     signingConfigs {
-        config {
-            keyAlias properties.getProperty("keystore.alias")
-            keyPassword properties.getProperty("keystore.pwd")
-            storeFile keyFile
-            storePassword properties.getProperty("keystore.alias_pwd")
+        release {
+            storeFile file("release_vxp_keystore.jks")
+            storePassword "123456"
+            keyAlias "key0"
+            keyPassword "123456"
         }
     }
-
     compileSdkVersion 28
     buildToolsVersion '28.0.3'
     defaultConfig {

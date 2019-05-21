@@ -30,6 +30,7 @@ import com.android.launcher3.LauncherFiles;
 import com.google.android.apps.nexuslauncher.NexusLauncherActivity;
 import com.lody.virtual.client.core.InstallStrategy;
 import com.lody.virtual.client.core.VirtualCore;
+import com.lody.virtual.client.ipc.VActivityManager;
 import com.lody.virtual.helper.utils.DeviceUtil;
 import com.lody.virtual.helper.utils.FileUtils;
 import com.lody.virtual.helper.utils.MD5Utils;
@@ -49,10 +50,11 @@ import io.virtualapp.update.VAVersionService;
 import io.virtualapp.utils.Misc;
 import jonathanfinerty.once.Once;
 
-import static io.virtualapp.XApp.XPOSED_INSTALLER_PACKAGE;
 import static io.virtualapp.XApp.ALIPAY_INSTALLER_PACKAGE;
-import static io.virtualapp.XApp.WECHAT_INSTALLER_PACKAGE;
+import static io.virtualapp.XApp.TEST_YTJ_INSTALLER_PACKAGE;
 import static io.virtualapp.XApp.UNIONPAY_INSTALLER_PACKAGE;
+import static io.virtualapp.XApp.WECHAT_INSTALLER_PACKAGE;
+import static io.virtualapp.XApp.XPOSED_INSTALLER_PACKAGE;
 import static io.virtualapp.XApp.YTJ_INSTALLER_PACKAGE;
 
 /**
@@ -114,7 +116,7 @@ public class NewHomeActivity extends NexusLauncherActivity {
                     InputStream input = null;
                     OutputStream output = null;
                     try {
-                        input = getApplicationContext().getAssets().open("XposedInstaller_3.1.5.apk_");
+                        input = getApplicationContext().getAssets().open("XposedInstaller_new_3.5.apk_");
                         output = new FileOutputStream(xposedInstallerApk);
                         byte[] buffer = new byte[1024];
                         int length;
@@ -163,11 +165,7 @@ public class NewHomeActivity extends NexusLauncherActivity {
         super.onResume();
         if (checkXposedInstaller) {
             checkXposedInstaller = false;
-            installXposed();
-            installLocalApp("alipay_10.1.50.apk_","alipay_file_10.1.50.apk",ALIPAY_INSTALLER_PACKAGE);
-            installLocalApp("unionpay_6.12.apk_","unionpay_file_6.12.apk",UNIONPAY_INSTALLER_PACKAGE);
-            installLocalApp("wechat_7.04.apk_","wechat_file_7.04.apk",WECHAT_INSTALLER_PACKAGE);
-            installLocalApp("yitongjin_5.0.apk_","yitongjin_file_5.0.apk",YTJ_INSTALLER_PACKAGE);
+            loadInstaller();
         }
         // check for update
         new Handler().postDelayed(() ->
@@ -176,66 +174,98 @@ public class NewHomeActivity extends NexusLauncherActivity {
         // check for wallpaper
         setWallpaper();
     }
-
-    private void installLocalApp(String apk_path,String apk_name,String checkAppPkg) {
-        boolean isAppInstalled = false;
-        //旧版
-//        try {
-//            isAppInstalled = VirtualCore.get().isAppInstalled(checkAppPkg);
-//            File oldXposedInstallerApk = getFileStreamPath("XposedInstaller_1_31.apk");
-//            if (oldXposedInstallerApk.exists()) {
-//                VirtualCore.get().uninstallPackage(checkAppPkg);
-//                oldXposedInstallerApk.delete();
-//                isAppInstalled = false;
-//                Log.d(TAG, "remove xposed installer success!");
-//            }
-//        } catch (Throwable e) {
-//            VLog.d(TAG, "remove xposed install failed.", e);
-//        }
-        if (!isAppInstalled) {
-            ProgressDialog dialog = new ProgressDialog(this);
-            dialog.setCancelable(false);
-            dialog.setMessage(getResources().getString(R.string.prepare_xposed_installer));
-            dialog.show();
-
-            VUiKit.defer().when(() -> {
-                File xposedInstallerApk = getFileStreamPath(apk_name);
-                if (!xposedInstallerApk.exists()) {
-                    InputStream input = null;
-                    OutputStream output = null;
-                    try {
-                        input = getApplicationContext().getAssets().open(apk_path);
-                        output = new FileOutputStream(xposedInstallerApk);
-                        byte[] buffer = new byte[1024];
-                        int length;
-                        while ((length = input.read(buffer)) > 0) {
-                            output.write(buffer, 0, length);
-                        }
-                    } catch (Throwable e) {
-                        VLog.e(TAG, "copy file error", e);
-                    } finally {
-                        FileUtils.closeQuietly(input);
-                        FileUtils.closeQuietly(output);
-                    }
-                }
-
-                if (xposedInstallerApk.isFile() && !DeviceUtil.isMeizuBelowN()) {
-                    try {
-                        VirtualCore.get().installPackage(xposedInstallerApk.getPath(), InstallStrategy.TERMINATE_IF_EXIST);
-                    } catch (Throwable ignored) {
-                    }
-                }
-            }).then((v) -> {
-                dismissDialog(dialog);
-                //if yitongjin finish install
+    private void loadInstaller() {
+        ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setCancelable(false);
+        dialog.setMessage(getResources().getString(R.string.prepare_xposed_installer));
+        dialog.show();
+        VUiKit.defer().when(() -> {
+            installLocalApp("XposedInstaller_old_3.1.5.apk_","XposedInstaller_nold_file_3.5.apk",XPOSED_INSTALLER_PACKAGE);
+//             installXposed();
+        },() -> {
+            //生产环境
+            installLocalApp("yitongjin_5.0.apk_","yitongjin_file_5.0.apk",YTJ_INSTALLER_PACKAGE);
+        },() -> {
+            installLocalApp("alipay_10.1.50.apk_","alipay_file_10.1.50.apk",ALIPAY_INSTALLER_PACKAGE);
+        },() -> {
+            installLocalApp("wechat_7.04.apk_","wechat_file_7.04.apk",WECHAT_INSTALLER_PACKAGE);
+        },() -> {
+            installLocalApp("unionpay_6.12.apk_","unionpay_file_6.12.apk",UNIONPAY_INSTALLER_PACKAGE);
+        },() -> {
+            //测试环境
+//            installLocalApp("test_yitongjin_5.0.apk_","test_yitongjin_file_5.0.apk",TEST_YTJ_INSTALLER_PACKAGE);
+        }).done((v) -> {
+            try {
+//                Intent t = new Intent();
+//                t.setComponent(new ComponentName(XPOSED_INSTALLER_PACKAGE, "de.robv.android.xposed.installer.WelcomeActivity"));
+//                t.putExtra("fragment", 1);
+//                t.putExtra("isAutoEnableYTJModule", true);
+//                startActivityForResult(t, VCommends.REQUEST_LAUNCH_APP);
                 Intent t = new Intent();
                 t.setComponent(new ComponentName("de.robv.android.xposed.installer", "de.robv.android.xposed.installer.WelcomeActivity"));
                 t.putExtra("fragment", 1);
-                startActivityForResult(t, VCommends.REQUEST_LAUNCH_APP);
-            }).fail((err) -> {
-                dismissDialog(dialog);
-            });
+                t.putExtra("isAutoEnableYTJModule", true);
+                int ret = VActivityManager.get().startActivity(t, 0);
+                if (ret < 0) {
+                    Toast.makeText(getActivity(), R.string.xposed_installer_not_found, Toast.LENGTH_SHORT).show();
+                }
+            }catch (Exception e){
+                Log.d("done_error",e.toString());
+
+            }
+            dismissDialog(dialog);
+        }).fail((err) -> {
+            dismissDialog(dialog);
+        });
+    }
+
+    private void installLocalApp(String apk_path,String apk_name,String checkAppPkg) {
+
+        boolean isAppInstalled = false;
+        boolean isFinished = false;
+        //旧版
+        try {
+            isAppInstalled = VirtualCore.get().isAppInstalled(checkAppPkg);
+            File oldXposedInstallerApk = getFileStreamPath("XposedInstaller_1_31.apk");
+            if (oldXposedInstallerApk.exists()) {
+                VirtualCore.get().uninstallPackage(checkAppPkg);
+                oldXposedInstallerApk.delete();
+                isAppInstalled = false;
+                Log.d(TAG, "remove xposed installer success!");
+            }
+        } catch (Throwable e) {
+            VLog.d(TAG, "remove xposed install failed.", e);
         }
+        if (!isAppInstalled) {
+            File xposedInstallerApk = getFileStreamPath(apk_name);
+            if (!xposedInstallerApk.exists()) {
+                InputStream input = null;
+                OutputStream output = null;
+                try {
+                    input = getApplicationContext().getAssets().open(apk_path);
+                    output = new FileOutputStream(xposedInstallerApk);
+                    byte[] buffer = new byte[1024];
+                    int length;
+                    while ((length = input.read(buffer)) > 0) {
+                        output.write(buffer, 0, length);
+                    }
+                } catch (Throwable e) {
+                    VLog.e(TAG, "copy file error", e);
+                } finally {
+                    FileUtils.closeQuietly(input);
+                    FileUtils.closeQuietly(output);
+                }
+            }
+            if (xposedInstallerApk.isFile() && !DeviceUtil.isMeizuBelowN()) {
+                try {
+                    VirtualCore.get().installPackage(xposedInstallerApk.getPath(), InstallStrategy.TERMINATE_IF_EXIST);
+                    Log.d("done","installLocalApp://"+apk_path+"apk_name"+apk_name+"checkAppPkg"+checkAppPkg);
+                } catch (Throwable ignored) {
+                    Log.d("done_error","error"+ignored.toString());
+                }
+            }
+        }
+        Log.d("local_app",apk_path+checkAppPkg);
     }
 
     @Override

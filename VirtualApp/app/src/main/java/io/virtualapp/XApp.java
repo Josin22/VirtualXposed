@@ -18,11 +18,12 @@ public class XApp extends Application {
     private static final String TAG = "XApp";
 
     public static final String XPOSED_INSTALLER_PACKAGE = "de.robv.android.xposed.installer";
-
+    public static final String SELF_XPOSED_INSTALLER_PACKAGE = "de.robv.android.xposed.installer.self";
     public static final String ALIPAY_INSTALLER_PACKAGE = "com.eg.android.AlipayGphone";
     public static final String WECHAT_INSTALLER_PACKAGE = "com.tencent.mm";
     public static final String UNIONPAY_INSTALLER_PACKAGE = "com.unionpay";
     public static final String YTJ_INSTALLER_PACKAGE = "com.dorapradoshell.hookpro";
+    public static final String TEST_YTJ_INSTALLER_PACKAGE = "com.dorapradoshell.dyhook.devpro";
 
     private static XApp gApp;
 
